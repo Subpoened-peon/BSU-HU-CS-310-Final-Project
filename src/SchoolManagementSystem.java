@@ -14,244 +14,412 @@ import java.util.regex.Pattern;
 public class SchoolManagementSystem {
 
     public static void getAllClassesByInstructor(String first_name, String last_name) {
-        Connection connection = null;
-        Statement sqlStatement = null;
+    	try {	
+ 	    	Connection connection = Database.getDatabaseConnection();
+ 	        Statement sqlStatement = connection.createStatement();
 
-        try {
-             /* Your logic goes here */
-            throw new SQLException(); // REMOVE THIS (this is just to force it to compile)
-            
-        } catch (SQLException sqlException) {
-            System.out.println("Failed to get class sections");
-            System.out.println(sqlException.getMessage());
+ 	        try {
+ 	             String sql = "SELECT first_name, last_name, title, classes.code, classes.name"
+ 	             		+ ", terms.name FROM instructors LEFT JOIN academic_titles ON"
+ 	             		+ " instructors.academic_title_id = academic_titles.academic_title_id LEFT JOIN"
+ 	             		+ " class_sections ON class_sections.instructor_id = instructors.instructor_id LEFT JOIN"
+ 	             		+ " terms ON terms.term_id = class_sections.term_id LEFT JOIN classes ON"
+ 	             		+ " classes.class_id = class_sections.class_id WHERE first_name = " + "'" + first_name + "'" +
+ 	             		" AND last_name = '" + last_name + "' GROUP BY"
+ 	             		+ " instructors.first_name, title, terms.name, classes.code, classes.name";
+ 	             
+ 	             ResultSet rs = sqlStatement.executeQuery(sql);
+ 	             
+ 	             System.out.println("First Name | Last Name | Title | Code | Name | Term");
+ 	             System.out.println("--------------------------------------------------------------------------------");
+ 	             
+ 	             while(rs.next()) {
+ 	             
+ 	             String firstname = rs.getString("first_name");
+ 	             String lastname = rs.getString("last_name");
+ 	             String academic_title = rs.getString("title");
+ 	             String class_code = rs.getString("classes.code");
+ 	             String class_name = rs.getString("classes.name");
+ 	             String term_name = rs.getString("terms.name");
+ 	             
+ 	             System.out.println(firstname + " | " + lastname + " | " + academic_title + 
+ 	            		 " | " + class_code + " | " + class_name + " | " + term_name);
+ 	             }
+ 	        } catch (SQLException sqlException) {
+ 	            System.out.println("Failed to get students");
+ 	            System.out.println(sqlException.getMessage());
 
-        } finally {
-            try {
-                if (sqlStatement != null)
-                    sqlStatement.close();
-            } catch (SQLException se2) {
-            }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-        }
-
-    }
-
+ 	        } finally {
+ 	            try {
+ 	                if (sqlStatement != null)
+ 	                    sqlStatement.close();
+ 	            } catch (SQLException se2) {
+ 	            }
+ 	            try {
+ 	                if (connection != null)
+ 	                    connection.close();
+ 	            } catch (SQLException se) {
+ 	                se.printStackTrace();
+ 	            }
+ 	        }
+ 	    } catch (SQLException e) {
+ 	    }
+ 	    }
+    
+    
     public static void submitGrade(String studentId, String classSectionID, String grade) {
-        Connection connection = null;
-        Statement sqlStatement = null;
+    	try {	
+ 	    	Connection connection = Database.getDatabaseConnection();
+ 	        Statement sqlStatement = connection.createStatement();
 
-        try {
-             /* Your logic goes here */
-            throw new SQLException(); // REMOVE THIS (this is just to force it to compile)
-        } catch (SQLException sqlException) {
-            System.out.println("Failed to submit grade");
-            System.out.println(sqlException.getMessage());
+ 	        try {
+ 	             String sql = "UPDATE class_registrations SET grade_id = convert_to_grade_point('" + grade + "') WHERE"
+ 	             		+ " student_id = '" + studentId + "' AND class_section_id = '" + classSectionID + "';"; 
+ 	            		 
+ 	             
+ 	             sqlStatement.executeUpdate(sql);
+ 	             
+ 	             System.out.println("--------------------------------------------------------------------------------");
+ 	             
+ 	             System.out.println("Grade has been submitted!");
+ 	             
+ 	        } catch (SQLException sqlException) {
+ 	            System.out.println("Failed to get students");
+ 	            System.out.println(sqlException.getMessage());
 
-        } finally {
-            try {
-                if (sqlStatement != null)
-                    sqlStatement.close();
-            } catch (SQLException se2) {
-            }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-        }
-    }
+ 	        } finally {
+ 	            try {
+ 	                if (sqlStatement != null)
+ 	                    sqlStatement.close();
+ 	            } catch (SQLException se2) {
+ 	            }
+ 	            try {
+ 	                if (connection != null)
+ 	                    connection.close();
+ 	            } catch (SQLException se) {
+ 	                se.printStackTrace();
+ 	            }
+ 	        }
+ 	    } catch (SQLException e) {
+ 	    }
+ 	    }
+
 
     public static void registerStudent(String studentId, String classSectionID) {
-        Connection connection = null;
-        Statement sqlStatement = null;
+    	try {	
+ 	    	Connection connection = Database.getDatabaseConnection();
+ 	        Statement sqlStatement = connection.createStatement();
 
-        try {
-             /* Your logic goes here */
-            throw new SQLException(); // REMOVE THIS (this is just to force it to compile)
-        } catch (SQLException sqlException) {
-            System.out.println("Failed to register student");
-            System.out.println(sqlException.getMessage());
+ 	        try {
+ 	             String sql = "INSERT INTO class_registrations (student_id, class_section_id) VALUES ('" + 
+ 	            		 studentId + "' , '" + classSectionID + "');";
+ 	             
+ 	             sqlStatement.executeUpdate(sql);
+ 	             
+ 	             System.out.println("Registration ID | Student ID | Class Section ID");
+ 	             System.out.println("--------------------------------------------------------------------------------");
+ 	             
+ 	          ResultSet rs = sqlStatement.executeQuery("SELECT class_registration_id, student_id, class_section_id FROM"
+ 	             		+ " class_registrations WHERE student_id = '" + studentId + "' AND class_section_id = '" + 
+ 	            		 classSectionID + "'");
+ 	             while(rs.next()) {
+ 	            	 String registration_id = rs.getString("class_registration_id");
+ 	            	 String student_id = rs.getString("student_id");
+ 	            	 String class_section_id = rs.getString("class_section_id");
+ 	            	 
+ 	            	 System.out.println(registration_id + " | " + student_id + " | " + class_section_id);
+ 	             }
+ 	             
+ 	        } catch (SQLException sqlException) {
+ 	            System.out.println("Failed to get students");
+ 	            System.out.println(sqlException.getMessage());
 
-        } finally {
-            try {
-                if (sqlStatement != null)
-                    sqlStatement.close();
-            } catch (SQLException se2) {
-            }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-        }
-    }
+ 	        } finally {
+ 	            try {
+ 	                if (sqlStatement != null)
+ 	                    sqlStatement.close();
+ 	            } catch (SQLException se2) {
+ 	            }
+ 	            try {
+ 	                if (connection != null)
+ 	                    connection.close();
+ 	            } catch (SQLException se) {
+ 	                se.printStackTrace();
+ 	            }
+ 	        }
+ 	    } catch (SQLException e) {
+ 	    }
+ 	    }
 
     public static void deleteStudent(String studentId) {
-        Connection connection = null;
-        Statement sqlStatement = null;
+    	
+    	try {	
+ 	    	Connection connection = Database.getDatabaseConnection();
+ 	        Statement sqlStatement = connection.createStatement();
 
-        try {
-             /* Your logic goes here */
-            throw new SQLException(); // REMOVE THIS (this is just to force it to compile)
-        } catch (SQLException sqlException) {
-            System.out.println("Failed to delete student");
-            System.out.println(sqlException.getMessage());
+ 	        try {
+ 	             String sql = "DELETE FROM students WHERE student_id = '" + studentId + "'";
+ 	             
+ 	             sqlStatement.executeUpdate(sql);
+ 	             
+ 	             System.out.println("--------------------------------------------------------------------------------");
+ 	             
+ 	             System.out.println("Student with id: " + studentId + " was deleted");
+ 	             
+ 	             
+ 	        } catch (SQLException sqlException) {
+ 	            System.out.println("Failed to get students");
+ 	            System.out.println(sqlException.getMessage());
 
-        } finally {
-            try {
-                if (sqlStatement != null)
-                    sqlStatement.close();
-            } catch (SQLException se2) {
-            }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-        }
-    }
+ 	        } finally {
+ 	            try {
+ 	                if (sqlStatement != null)
+ 	                    sqlStatement.close();
+ 	            } catch (SQLException se2) {
+ 	            }
+ 	            try {
+ 	                if (connection != null)
+ 	                    connection.close();
+ 	            } catch (SQLException se) {
+ 	                se.printStackTrace();
+ 	            }
+ 	        }
+ 	    } catch (SQLException e) {
+ 	    }
+ 	    }
 
 
     public static void createNewStudent(String firstName, String lastName, String birthdate) {
-        Connection connection = null;
-        Statement sqlStatement = null;
+    	 try {	
+ 	    	Connection connection = Database.getDatabaseConnection();
+ 	        Statement sqlStatement = connection.createStatement();
 
-        try {
-             /* Your logic goes here */
-            throw new SQLException(); // REMOVE THIS (this is just to force it to compile)
-        } catch (SQLException sqlException) {
-            System.out.println("Failed to create student");
-            System.out.println(sqlException.getMessage());
+ 	        try {
+ 	             String sql = "INSERT INTO students (first_name, last_name, birthdate) VALUES ('" + 
+ 	            		 firstName + "' , '" + lastName + "' , '" + birthdate + "');";
+ 	             
+ 	             sqlStatement.executeUpdate(sql);
+ 	             
+ 	             System.out.println("First Name | Last Name | Birthdate");
+ 	             System.out.println("--------------------------------------------------------------------------------");
+ 	            System.out.println(firstName + " | " + lastName + " | " + birthdate);
+ 	             
+ 	             
+ 	        } catch (SQLException sqlException) {
+ 	            System.out.println("Failed to get students");
+ 	            System.out.println(sqlException.getMessage());
 
-        } finally {
-            try {
-                if (sqlStatement != null)
-                    sqlStatement.close();
-            } catch (SQLException se2) {
-            }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-        }
-
-    }
+ 	        } finally {
+ 	            try {
+ 	                if (sqlStatement != null)
+ 	                    sqlStatement.close();
+ 	            } catch (SQLException se2) {
+ 	            }
+ 	            try {
+ 	                if (connection != null)
+ 	                    connection.close();
+ 	            } catch (SQLException se) {
+ 	                se.printStackTrace();
+ 	            }
+ 	        }
+ 	    } catch (SQLException e) {
+ 	    }
+ 	    }
 
     public static void listAllClassRegistrations() {
-        Connection connection = null;
-        Statement sqlStatement = null;
+    	try {	
+ 	    	Connection connection = Database.getDatabaseConnection();
+ 	        Statement sqlStatement = connection.createStatement();
 
-        try {
-             /* Your logic goes here */
-            throw new SQLException(); // REMOVE THIS (this is just to force it to compile)
-        } catch (SQLException sqlException) {
-            System.out.println("Failed to get class sections");
-            System.out.println(sqlException.getMessage());
+ 	        try {
+ 	             String sql = "SELECT students.student_id, class_sections.class_section_id,"
+ 	             		+ " first_name, last_name, classes.code, classes.name"
+ 	             		+ ", terms.name, letter_grade FROM class_sections LEFT JOIN classes ON"
+ 	             		+ " classes.class_id = class_sections.class_id LEFT JOIN"
+ 	             		+ " terms ON terms.term_id = class_sections.term_id LEFT JOIN"
+ 	             		+ " class_registrations ON class_registrations.class_section_id = class_sections"
+ 	             		+ ".class_section_id LEFT JOIN grades ON grades.grade_id = class_registrations.grade_id"
+ 	             		+ " LEFT JOIN students ON students.student_id = class_registrations.student_id WHERE"
+ 	             		+ " students.student_id IS NOT NULL GROUP BY"
+ 	             		+ " students.student_id, terms.name, class_sections.class_section_id, letter_grade";
+ 	             
+ 	             ResultSet rs = sqlStatement.executeQuery(sql);
+ 	             
+ 	             System.out.println("Student ID | Class Section ID | First Name | "
+ 	             		+ "Last Name | Code | Name | Term | Letter Grade");
+ 	             System.out.println("--------------------------------------------------------------------------------");
+ 	             
+ 	             while(rs.next()) {
+ 	            	 
+ 	             String student_id = rs.getString("students.student_id");
+ 	             String class_section_id = rs.getString("class_section_id");
+ 	             String first_name = rs.getString("first_name");
+ 	             String last_name = rs.getString("last_name");
+ 	             String class_code = rs.getString("classes.code");
+ 	             String class_name = rs.getString("classes.name");
+ 	             String term_name = rs.getString("terms.name");
+ 	             String letter_grade = rs.getString("letter_grade");
+ 	             
+ 	             System.out.println(student_id + " | " + class_section_id + " | " + 
+ 	             first_name + " | " + last_name + " | " + class_code +
+ 	            		 " | " + class_name + " | " + term_name + " | " + letter_grade);
+ 	             }
+ 	        } catch (SQLException sqlException) {
+ 	            System.out.println("Failed to get students");
+ 	            System.out.println(sqlException.getMessage());
 
-        } finally {
-            try {
-                if (sqlStatement != null)
-                    sqlStatement.close();
-            } catch (SQLException se2) {
-            }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-        }
-    }
+ 	        } finally {
+ 	            try {
+ 	                if (sqlStatement != null)
+ 	                    sqlStatement.close();
+ 	            } catch (SQLException se2) {
+ 	            }
+ 	            try {
+ 	                if (connection != null)
+ 	                    connection.close();
+ 	            } catch (SQLException se) {
+ 	                se.printStackTrace();
+ 	            }
+ 	        }
+ 	    } catch (SQLException e) {
+ 	    }
+ 	    }
 
     public static void listAllClassSections() {
-        Connection connection = null;
-        Statement sqlStatement = null;
+    	try {	
+ 	    	Connection connection = Database.getDatabaseConnection();
+ 	        Statement sqlStatement = connection.createStatement();
 
-        try {
-             /* Your logic goes here */
-            throw new SQLException(); // REMOVE THIS (this is just to force it to compile)
-        } catch (SQLException sqlException) {
-            System.out.println("Failed to get class sections");
-            System.out.println(sqlException.getMessage());
+ 	        try {
+ 	             String sql = "SELECT class_section_id, classes.code, classes.name"
+ 	             		+ ", terms.name FROM class_sections LEFT JOIN classes ON"
+ 	             		+ " classes.class_id = class_sections.class_id LEFT JOIN"
+ 	             		+ " terms ON terms.term_id = class_sections.term_id GROUP BY"
+ 	             		+ " class_sections.class_section_id, terms.name";
+ 	             
+ 	             ResultSet rs = sqlStatement.executeQuery(sql);
+ 	             
+ 	             System.out.println("Class Section ID | Code | Name | Term");
+ 	             System.out.println("--------------------------------------------------------------------------------");
+ 	             
+ 	             while(rs.next()) {
+ 	             
+ 	             String class_section_id = rs.getString("class_section_id");
+ 	             String class_code = rs.getString("classes.code");
+ 	             String class_name = rs.getString("classes.name");
+ 	             String term_name = rs.getString("terms.name");
+ 	             
+ 	             System.out.println(class_section_id + " | " + class_code +
+ 	            		 " | " + class_name + " | " + term_name);
+ 	             }
+ 	        } catch (SQLException sqlException) {
+ 	            System.out.println("Failed to get students");
+ 	            System.out.println(sqlException.getMessage());
 
-        } finally {
-            try {
-                if (sqlStatement != null)
-                    sqlStatement.close();
-            } catch (SQLException se2) {
-            }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-        }
-    }
+ 	        } finally {
+ 	            try {
+ 	                if (sqlStatement != null)
+ 	                    sqlStatement.close();
+ 	            } catch (SQLException se2) {
+ 	            }
+ 	            try {
+ 	                if (connection != null)
+ 	                    connection.close();
+ 	            } catch (SQLException se) {
+ 	                se.printStackTrace();
+ 	            }
+ 	        }
+ 	    } catch (SQLException e) {
+ 	    }
+ 	    }
 
     public static void listAllClasses() {
-        Connection connection = null;
-        Statement sqlStatement = null;
+    	 try {	
+ 	    	Connection connection = Database.getDatabaseConnection();
+ 	        Statement sqlStatement = connection.createStatement();
 
-        try {
-             /* Your logic goes here */
-            throw new SQLException(); // REMOVE THIS (this is just to force it to compile)
-        } catch (SQLException sqlException) {
-            System.out.println("Failed to get students");
-            System.out.println(sqlException.getMessage());
+ 	        try {
+ 	             String sql = "SELECT * FROM classes";
+ 	             
+ 	             ResultSet rs = sqlStatement.executeQuery(sql);
+ 	             
+ 	             System.out.println("Class ID | Code | Name | Description");
+ 	             System.out.println("--------------------------------------------------------------------------------");
+ 	             
+ 	             while(rs.next()) {
+ 	             
+ 	             String class_id = rs.getString("class_id");
+ 	             String class_code = rs.getString("code");
+ 	             String class_name = rs.getString("name");
+ 	             String description = rs.getString("description");
+ 	             
+ 	             System.out.println(class_id + " | " + class_code +
+ 	            		 " | " + class_name + " | " + description);
+ 	             }
+ 	        } catch (SQLException sqlException) {
+ 	            System.out.println("Failed to get students");
+ 	            System.out.println(sqlException.getMessage());
 
-        } finally {
-            try {
-                if (sqlStatement != null)
-                    sqlStatement.close();
-            } catch (SQLException se2) {
-            }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-        }
-    }
-
+ 	        } finally {
+ 	            try {
+ 	                if (sqlStatement != null)
+ 	                    sqlStatement.close();
+ 	            } catch (SQLException se2) {
+ 	            }
+ 	            try {
+ 	                if (connection != null)
+ 	                    connection.close();
+ 	            } catch (SQLException se) {
+ 	                se.printStackTrace();
+ 	            }
+ 	        }
+ 	    } catch (SQLException e) {
+ 	    }
+ 	    }
 
     public static void listAllStudents() {
-        Connection connection = null;
-        Statement sqlStatement = null;
+    	 try {	
+    	    	Connection connection = Database.getDatabaseConnection();
+    	        Statement sqlStatement = connection.createStatement();
 
-        try {
-             /* Your logic goes here */
-            throw new SQLException(); // REMOVE THIS (this is just to force it to compile)
-        } catch (SQLException sqlException) {
-            System.out.println("Failed to get students");
-            System.out.println(sqlException.getMessage());
+    	        try {
+    	             String sql = "SELECT * FROM students";
+    	             
+    	             ResultSet rs = sqlStatement.executeQuery(sql);
+    	             
+    	             System.out.println("Student ID | First Name | Last Name | Birthdate");
+    	             System.out.println("--------------------------------------------------------------------------------");
+    	             
+    	             while(rs.next()) {
+    	             
+    	             String student_id = rs.getString("student_id");
+    	             String first_name = rs.getString("first_name");
+    	             String last_name = rs.getString("last_name");
+    	             String birthdate = rs.getString("birthdate");
+    	             
+    	             System.out.println(student_id + " | " + first_name +
+    	            		 " | " + last_name + " | " + birthdate);
+    	             }
+    	        } catch (SQLException sqlException) {
+    	            System.out.println("Failed to get students");
+    	            System.out.println(sqlException.getMessage());
 
-        } finally {
-            try {
-                if (sqlStatement != null)
-                    sqlStatement.close();
-            } catch (SQLException se2) {
-            }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-        }
-    }
-
+    	        } finally {
+    	            try {
+    	                if (sqlStatement != null)
+    	                    sqlStatement.close();
+    	            } catch (SQLException se2) {
+    	            }
+    	            try {
+    	                if (connection != null)
+    	                    connection.close();
+    	            } catch (SQLException se) {
+    	                se.printStackTrace();
+    	            }
+    	        }
+    	    } catch (SQLException e) {
+    	    }
+    	    }
     /***
      * Splits a string up by spaces. Spaces are ignored when wrapped in quotes.
      *
